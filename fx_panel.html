@@ -42,6 +42,9 @@
     align-items: baseline;
     gap: 14px;
     align-self: stretch;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
   }
 
   header h1 {
@@ -116,10 +119,7 @@
     user-select: none;
   }
 
-  .fx-btn .icon {
-    font-size: 20px;
-    line-height: 1;
-  }
+  .fx-btn .icon  { font-size: 20px; line-height: 1; }
 
   .fx-btn .label {
     font-size: 10px;
@@ -130,7 +130,6 @@
   }
 
   .fx-btn:hover { border-color: #3a3a48; background: #202028; }
-
   .fx-btn.active { border-color: var(--fx-color, var(--accent)); background: #1a1a28; }
   .fx-btn.active .label { color: var(--fx-color, var(--accent)); }
   .fx-btn.active .icon  { filter: drop-shadow(0 0 6px var(--fx-color, var(--accent))); }
@@ -165,10 +164,7 @@
     letter-spacing: .06em;
   }
 
-  .pill-toggle button.active {
-    background: var(--accent);
-    color: #fff;
-  }
+  .pill-toggle button.active { background: var(--accent); color: #fff; }
 
   /* ── Sliders ────────────────────────────────────────────────── */
   .slider-row {
@@ -194,7 +190,7 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--text);
-    min-width: 36px;
+    min-width: 50px;
     text-align: right;
   }
 
@@ -219,8 +215,55 @@
     transition: transform .1s;
   }
 
-  input[type=range]:active::-webkit-slider-thumb {
-    transform: scale(1.25);
+  input[type=range]:active::-webkit-slider-thumb { transform: scale(1.25); }
+
+  /* ── On/Off toggles ─────────────────────────────────────────── */
+  .onoff-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .onoff-btn {
+    background: #1c1c22;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color .15s;
+    user-select: none;
+  }
+
+  .onoff-btn .ob-label {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .onoff-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #333;
+    flex-shrink: 0;
+    transition: background .2s, box-shadow .2s;
+  }
+
+  .onoff-btn.on .onoff-dot {
+    background: #4caf50;
+    box-shadow: 0 0 6px #4caf5099;
+  }
+
+  .onoff-btn.on { border-color: #4caf5055; }
+
+  /* ── XY offset grid ─────────────────────────────────────────── */
+  .xy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
   }
 
   /* ── Status bar ─────────────────────────────────────────────── */
@@ -230,6 +273,8 @@
     letter-spacing: .06em;
     align-self: stretch;
     max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
     display: flex;
     gap: 8px;
     align-items: center;
@@ -257,46 +302,91 @@
 <!-- Effect picker -->
 <div class="card">
   <div class="card-title">Effect</div>
-  <div class="effect-grid" id="effect-grid">
-    <!-- filled by JS -->
-  </div>
+  <div class="effect-grid" id="effect-grid"></div>
 </div>
 
 <!-- Source mode -->
 <div class="card">
   <div class="card-title">Tracking source</div>
   <div class="toggle-row">
-    <div class="toggle-label">Detect via <b id="src-label">Hand</b></div>
+    <div class="toggle-label">Emit from <b id="src-label">Hand</b></div>
     <div class="pill-toggle">
-      <button id="btn-hand"  class="active" onclick="setSource(0)">Hand</button>
-      <button id="btn-mouth"               onclick="setSource(1)">Mouth</button>
+      <button id="btn-hand"  class="active" onclick="setSource(0)">✋ Hand</button>
+      <button id="btn-mouth"               onclick="setSource(1)">👄 Mouth</button>
     </div>
   </div>
 </div>
 
-<!-- Sliders -->
+<!-- Intensity + particles -->
 <div class="card">
   <div class="card-title">Parameters</div>
 
   <div class="slider-row">
     <div class="slider-header">
       <span class="slider-name">Intensity</span>
-      <span class="slider-value" id="val-intensity">1.0×</span>
+      <span class="slider-value" id="val-intensity">1.00×</span>
     </div>
     <input type="range" id="sl-intensity"
-           min="0" max="2" step="0.05" value="1"
+           min="0" max="3" step="0.05" value="1"
            oninput="onSlider('intensity', this.value, 'val-intensity', v => v+'×')">
   </div>
 
   <div class="slider-row">
     <div class="slider-header">
       <span class="slider-name">Particles</span>
-      <span class="slider-value" id="val-particles">1.0×</span>
+      <span class="slider-value" id="val-particles">1.00×</span>
     </div>
     <input type="range" id="sl-particles"
            min="0" max="2" step="0.05" value="1"
            oninput="onSlider('particle_scale', this.value, 'val-particles', v => v+'×')">
   </div>
+</div>
+
+<!-- On/Off toggles -->
+<div class="card">
+  <div class="card-title">Toggles</div>
+  <div class="onoff-grid">
+    <div class="onoff-btn on" id="tog-particles" onclick="toggle('particles_on', 'tog-particles')">
+      <span class="ob-label">Particles</span>
+      <span class="onoff-dot"></span>
+    </div>
+    <div class="onoff-btn on" id="tog-grade" onclick="toggle('cinematic_grade', 'tog-grade')">
+      <span class="ob-label">Cine Grade</span>
+      <span class="onoff-dot"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Mount offset XY -->
+<div class="card">
+  <div class="card-title">Mount offset</div>
+  <div class="xy-grid">
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-name">X offset</span>
+        <span class="slider-value" id="val-ox">0 px</span>
+      </div>
+      <input type="range" id="sl-ox"
+             min="-320" max="320" step="1" value="0"
+             oninput="onSlider('mount_offset_x', this.value, 'val-ox', v => (v>=0?'+':'')+v+' px')">
+    </div>
+    <div class="slider-row">
+      <div class="slider-header">
+        <span class="slider-name">Y offset</span>
+        <span class="slider-value" id="val-oy">0 px</span>
+      </div>
+      <input type="range" id="sl-oy"
+             min="-180" max="180" step="1" value="0"
+             oninput="onSlider('mount_offset_y', this.value, 'val-oy', v => (v>=0?'+':'')+v+' px')">
+    </div>
+  </div>
+  <button onclick="resetOffset()" style="
+    background:#1c1c22; border:1px solid var(--border); border-radius:6px;
+    color:var(--muted); font:inherit; font-size:11px; letter-spacing:.08em;
+    text-transform:uppercase; padding:7px 14px; cursor:pointer; align-self:flex-start;
+    transition: border-color .15s, color .15s;">
+    Reset offset
+  </button>
 </div>
 
 <div id="status">
@@ -313,7 +403,10 @@ const EFFECT_META = {
   PLASMA:    { icon: "🌀",  color: "#ce93d8" },
 };
 
-let state = {};
+// Local toggle state so UI is instant (server lags ~120 ms)
+const localToggles = { particles_on: true, cinematic_grade: true };
+
+let state      = {};
 let pollActive = true;
 
 // ── Build effect grid ──────────────────────────────────────────────────────
@@ -334,31 +427,39 @@ function buildGrid(effects) {
 
 // ── Apply state to DOM ──────────────────────────────────────────────────────
 function applyState(s) {
-  // FPS
   document.getElementById("fps-display").childNodes[0].nodeValue = s.fps.toFixed(0);
   document.getElementById("accel-badge").textContent = s.accel || "";
 
-  // Effects (build grid once)
   if (!state.effects) buildGrid(s.effects);
-  document.querySelectorAll(".fx-btn").forEach(b => {
-    b.classList.toggle("active", parseInt(b.dataset.idx) === s.effect);
-  });
+  document.querySelectorAll(".fx-btn").forEach(b =>
+    b.classList.toggle("active", parseInt(b.dataset.idx) === s.effect));
 
-  // Source
   document.getElementById("btn-hand").classList.toggle("active",  s.source_mode === 0);
   document.getElementById("btn-mouth").classList.toggle("active", s.source_mode === 1);
   document.getElementById("src-label").textContent = s.source_mode === 0 ? "Hand" : "Mouth";
 
-  // Sliders (don't fight user while dragging)
-  if (document.activeElement !== document.getElementById("sl-intensity"))
-    document.getElementById("sl-intensity").value = s.intensity;
-  if (document.activeElement !== document.getElementById("sl-particles"))
-    document.getElementById("sl-particles").value = s.particle_scale;
+  // Sliders — don't fight user while dragging
+  const sliders = [
+    ["sl-intensity", "val-intensity", s.intensity,       v => parseFloat(v).toFixed(2)+"×"],
+    ["sl-particles", "val-particles", s.particle_scale,  v => parseFloat(v).toFixed(2)+"×"],
+    ["sl-ox",        "val-ox",        s.mount_offset_x,  v => (v>=0?"+":"")+v+" px"],
+    ["sl-oy",        "val-oy",        s.mount_offset_y,  v => (v>=0?"+":"")+v+" px"],
+  ];
+  sliders.forEach(([id, valId, val, fmt]) => {
+    const el = document.getElementById(id);
+    if (document.activeElement !== el) el.value = val;
+    document.getElementById(valId).textContent = fmt(val);
+  });
 
-  document.getElementById("val-intensity").textContent = parseFloat(s.intensity).toFixed(2) + "×";
-  document.getElementById("val-particles").textContent = parseFloat(s.particle_scale).toFixed(2) + "×";
+  // Toggles — use local state for instant feedback
+  setToggleUI("tog-particles", localToggles.particles_on);
+  setToggleUI("tog-grade",     localToggles.cinematic_grade);
 
   state = s;
+}
+
+function setToggleUI(id, on) {
+  document.getElementById(id).classList.toggle("on", on);
 }
 
 // ── Polling ─────────────────────────────────────────────────────────────────
@@ -367,8 +468,7 @@ async function poll() {
     try {
       const r = await fetch("/api/state");
       if (!r.ok) throw new Error(r.status);
-      const s = await r.json();
-      applyState(s);
+      applyState(await r.json());
       setConn(true);
     } catch(e) {
       setConn(false);
@@ -382,7 +482,7 @@ function setConn(ok) {
   document.getElementById("conn-text").textContent = ok ? "Connected to FX" : "Waiting for FX…";
 }
 
-// ── API helpers ──────────────────────────────────────────────────────────────
+// ── API helpers ───────────────────────────────────────────────────────────────
 async function post(payload) {
   try {
     await fetch("/api/set", {
@@ -393,13 +493,26 @@ async function post(payload) {
   } catch(_) {}
 }
 
-function setEffect(i)   { post({ effect: i }); }
-function setSource(m)   { post({ source_mode: m }); }
+function setEffect(i) { post({ effect: i }); }
+function setSource(m)  { post({ source_mode: m }); }
 
 function onSlider(key, rawVal, labelId, fmt) {
   const v = parseFloat(parseFloat(rawVal).toFixed(2));
-  document.getElementById(labelId).textContent = fmt(v.toFixed(2));
+  document.getElementById(labelId).textContent = fmt(v);
   post({ [key]: v });
+}
+
+function toggle(key, btnId) {
+  localToggles[key] = !localToggles[key];
+  setToggleUI(btnId, localToggles[key]);
+  post({ [key]: localToggles[key] });
+}
+
+function resetOffset() {
+  ["sl-ox","sl-oy"].forEach(id => { document.getElementById(id).value = 0; });
+  document.getElementById("val-ox").textContent = "0 px";
+  document.getElementById("val-oy").textContent = "0 px";
+  post({ mount_offset_x: 0, mount_offset_y: 0 });
 }
 
 poll();
