@@ -1,16 +1,3 @@
-"""
-FX – Optimized webcam effects
-Fixes vs original:
-  • Lightning  – full-frame ROI, no early break, thicker strokes, arc toward top
-  • Smoke      – strong upward velocity, minimal lateral drift, slower size growth
-Performance:
-  • Particle render: vectorized numpy draw via rasterization, no Python per-particle loop
-  • spread_up/down: single in-place convolution kernel via cv2.filter2D (no np.roll allocs)
-  • apply_cinematic_grade: LUT-based (pre-built per effect, applied in one indexing op)
-  • blend_effect / FROST: skip entirely when peak value < threshold
-  • fire_particles / smoke_particles: all spawning & physics fully vectorized
-  • CUDA path preserved; OpenCL fallback unchanged
-"""
 
 import json
 import os
