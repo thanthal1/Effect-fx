@@ -4,6 +4,9 @@ This project pushes Python-based computer vision and rendering toward real-time 
 
 Effects are generated independently of the camera feed, allowing external compositing (e.g., in OBS). This separation improves both flexibility and performance.
 
+![Lightning Coming out of hand](https://github.com/thanthal1/Effect-fx/blob/master/Example.png)
+
+
 ---
 
 ## Features
