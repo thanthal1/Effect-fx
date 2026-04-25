@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FX Control</title>
+<style>
+  :root {
+    --bg:      #0d0d0f;
+    --surface: #16161a;
+    --border:  #2a2a32;
+    --text:    #e8e6f0;
+    --muted:   #6b6880;
+    --accent:  #7c6af7;
+    --accent2: #4fc3f7;
+    --fire:    #ff6b35;
+    --frost:   #4fc3f7;
+    --light:   #ffe082;
+    --smoke:   #b0bec5;
+    --plasma:  #ce93d8;
+    --radius:  10px;
+    --track-h: 4px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 13px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 20px 40px;
+    gap: 20px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    align-self: stretch;
+  }
+
+  header h1 {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  #accel-badge {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .06em;
+  }
+
+  #fps-display {
+    margin-left: auto;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent2);
+    letter-spacing: -.02em;
+    line-height: 1;
+  }
+
+  #fps-display span {
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-left: 3px;
+    letter-spacing: .06em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .card-title {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  /* ── Effect buttons ─────────────────────────────────────────── */
+  .effect-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+
+  .fx-btn {
+    background: #1c1c22;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 4px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    user-select: none;
+  }
+
+  .fx-btn .icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .fx-btn .label {
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color .15s;
+  }
+
+  .fx-btn:hover { border-color: #3a3a48; background: #202028; }
+
+  .fx-btn.active { border-color: var(--fx-color, var(--accent)); background: #1a1a28; }
+  .fx-btn.active .label { color: var(--fx-color, var(--accent)); }
+  .fx-btn.active .icon  { filter: drop-shadow(0 0 6px var(--fx-color, var(--accent))); }
+
+  /* ── Source toggle ──────────────────────────────────────────── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .toggle-label { color: var(--muted); flex: 1; }
+  .toggle-label b { color: var(--text); font-weight: 500; }
+
+  .pill-toggle {
+    display: flex;
+    background: #1c1c22;
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    overflow: hidden;
+  }
+
+  .pill-toggle button {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 12px;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    letter-spacing: .06em;
+  }
+
+  .pill-toggle button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  /* ── Sliders ────────────────────────────────────────────────── */
+  .slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .slider-name {
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .slider-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: var(--track-h);
+    border-radius: 2px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--accent);
+    transition: transform .1s;
+  }
+
+  input[type=range]:active::-webkit-slider-thumb {
+    transform: scale(1.25);
+  }
+
+  /* ── Status bar ─────────────────────────────────────────────── */
+  #status {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .06em;
+    align-self: stretch;
+    max-width: 480px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  #conn-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #4caf50;
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+
+  #conn-dot.err { background: #f44336; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>FX Control</h1>
+  <span id="accel-badge">—</span>
+  <div id="fps-display">—<span>fps</span></div>
+</header>
+
+<!-- Effect picker -->
+<div class="card">
+  <div class="card-title">Effect</div>
+  <div class="effect-grid" id="effect-grid">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- Source mode -->
+<div class="card">
+  <div class="card-title">Tracking source</div>
+  <div class="toggle-row">
+    <div class="toggle-label">Detect via <b id="src-label">Hand</b></div>
+    <div class="pill-toggle">
+      <button id="btn-hand"  class="active" onclick="setSource(0)">Hand</button>
+      <button id="btn-mouth"               onclick="setSource(1)">Mouth</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sliders -->
+<div class="card">
+  <div class="card-title">Parameters</div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-name">Intensity</span>
+      <span class="slider-value" id="val-intensity">1.0×</span>
+    </div>
+    <input type="range" id="sl-intensity"
+           min="0" max="2" step="0.05" value="1"
+           oninput="onSlider('intensity', this.value, 'val-intensity', v => v+'×')">
+  </div>
+
+  <div class="slider-row">
+    <div class="slider-header">
+      <span class="slider-name">Particles</span>
+      <span class="slider-value" id="val-particles">1.0×</span>
+    </div>
+    <input type="range" id="sl-particles"
+           min="0" max="2" step="0.05" value="1"
+           oninput="onSlider('particle_scale', this.value, 'val-particles', v => v+'×')">
+  </div>
+</div>
+
+<div id="status">
+  <div id="conn-dot"></div>
+  <span id="conn-text">Connecting…</span>
+</div>
+
+<script>
+const EFFECT_META = {
+  FIRE:      { icon: "🔥", color: "#ff6b35" },
+  FROST:     { icon: "❄️",  color: "#4fc3f7" },
+  LIGHTNING: { icon: "⚡",  color: "#ffe082" },
+  SMOKE:     { icon: "💨",  color: "#b0bec5" },
+  PLASMA:    { icon: "🌀",  color: "#ce93d8" },
+};
+
+let state = {};
+let pollActive = true;
+
+// ── Build effect grid ──────────────────────────────────────────────────────
+function buildGrid(effects) {
+  const grid = document.getElementById("effect-grid");
+  grid.innerHTML = "";
+  effects.forEach((name, i) => {
+    const meta = EFFECT_META[name] || { icon: "✦", color: "#7c6af7" };
+    const btn  = document.createElement("button");
+    btn.className   = "fx-btn";
+    btn.dataset.idx = i;
+    btn.style.setProperty("--fx-color", meta.color);
+    btn.innerHTML   = `<span class="icon">${meta.icon}</span><span class="label">${name}</span>`;
+    btn.onclick     = () => setEffect(i);
+    grid.appendChild(btn);
+  });
+}
+
+// ── Apply state to DOM ──────────────────────────────────────────────────────
+function applyState(s) {
+  // FPS
+  document.getElementById("fps-display").childNodes[0].nodeValue = s.fps.toFixed(0);
+  document.getElementById("accel-badge").textContent = s.accel || "";
+
+  // Effects (build grid once)
+  if (!state.effects) buildGrid(s.effects);
+  document.querySelectorAll(".fx-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.idx) === s.effect);
+  });
+
+  // Source
+  document.getElementById("btn-hand").classList.toggle("active",  s.source_mode === 0);
+  document.getElementById("btn-mouth").classList.toggle("active", s.source_mode === 1);
+  document.getElementById("src-label").textContent = s.source_mode === 0 ? "Hand" : "Mouth";
+
+  // Sliders (don't fight user while dragging)
+  if (document.activeElement !== document.getElementById("sl-intensity"))
+    document.getElementById("sl-intensity").value = s.intensity;
+  if (document.activeElement !== document.getElementById("sl-particles"))
+    document.getElementById("sl-particles").value = s.particle_scale;
+
+  document.getElementById("val-intensity").textContent = parseFloat(s.intensity).toFixed(2) + "×";
+  document.getElementById("val-particles").textContent = parseFloat(s.particle_scale).toFixed(2) + "×";
+
+  state = s;
+}
+
+// ── Polling ─────────────────────────────────────────────────────────────────
+async function poll() {
+  while (pollActive) {
+    try {
+      const r = await fetch("/api/state");
+      if (!r.ok) throw new Error(r.status);
+      const s = await r.json();
+      applyState(s);
+      setConn(true);
+    } catch(e) {
+      setConn(false);
+    }
+    await new Promise(r => setTimeout(r, 120));
+  }
+}
+
+function setConn(ok) {
+  document.getElementById("conn-dot").classList.toggle("err", !ok);
+  document.getElementById("conn-text").textContent = ok ? "Connected to FX" : "Waiting for FX…";
+}
+
+// ── API helpers ──────────────────────────────────────────────────────────────
+async function post(payload) {
+  try {
+    await fetch("/api/set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch(_) {}
+}
+
+function setEffect(i)   { post({ effect: i }); }
+function setSource(m)   { post({ source_mode: m }); }
+
+function onSlider(key, rawVal, labelId, fmt) {
+  const v = parseFloat(parseFloat(rawVal).toFixed(2));
+  document.getElementById(labelId).textContent = fmt(v.toFixed(2));
+  post({ [key]: v });
+}
+
+poll();
+</script>
+</body>
+</html>
